@@ -15,7 +15,7 @@ pip install tensorflow==2.4.1 tensorflow-gpu==2.4.1 opencv-python mediapipe skle
 The scripts directory contains all needed scripts to prepare dataset, run pose detection on the cam and detect actions and to run the model
 
 ## Preparing the data
-First, start by adding the words you want to classify to ACTIONS in scripts/settings.py like the example above
+First, start by adding the words you want to classify to ACTIONS in scripts/settings.py like the example below
 
 ```python
 ACTIONS = np.array(['word_1', 'word_2', 'word_3'])
