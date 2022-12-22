@@ -33,7 +33,7 @@ python data_preparation --clear-actions
 
 if you want to clear data 
 ```
-python data_preparation --prepare-data
+python data_preparation --clear-data
 ```
 
 ## Collecting Data
