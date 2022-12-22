@@ -1,9 +1,16 @@
 # modeling
-Start by setting up the environment
-
+## Installation
+### Virtual environement
+```
+conda create --name pose-lstm python=3.8
+conda activate pose-lstm
+cd scripts
+```
+### Dependencies
 ```
 pip install tensorflow==2.4.1 tensorflow-gpu==2.4.1 opencv-python mediapipe sklearn matplotlib
 ```
+
 
 The scripts directory contains all needed scripts to prepare dataset, run pose detection on the cam and detect actions and to run the model
 
