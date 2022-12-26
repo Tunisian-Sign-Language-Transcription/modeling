@@ -58,5 +58,4 @@ You can test the model once trained on real time feed of your webcam by running 
 
 ```
 python cam.py --test
-
 ```
