@@ -20,6 +20,11 @@ First, start by adding the words you want to classify to ACTIONS in scripts/sett
 ```python
 ACTIONS = np.array(['word_1', 'word_2', 'word_3'])
 ```
+You can set the number of sequences for each action and the length of each sequence (frames)
+```python
+NO_SEQUENCES = 10
+SEQUENCE_LENGTH = 30
+```
 
 run the following script to generate the dataset directories in data/joints (always run the scripts from withtin the scripts directory
 ```
