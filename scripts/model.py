@@ -3,6 +3,7 @@ from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense
 from tensorflow.keras.callbacks import TensorBoard
+from scipy import stats
 import argparse
 import abc
 import settings as s
@@ -10,6 +11,8 @@ import numpy as np
 import os
 
 args = abc.abstractproperty()
+
+
 
 
 
@@ -40,7 +43,7 @@ def load_data():
 
 def model_structure():
     model = Sequential()
-    model.add(LSTM(64, return_sequences=True, activation='relu', input_shape=(30,1662)))
+    model.add(LSTM(64, return_sequences=True, activation='relu', input_shape=(30,258)))
     model.add(LSTM(128, return_sequences=True, activation='relu'))
     model.add(LSTM(64, return_sequences=False, activation='relu'))
     model.add(Dense(64, activation='relu'))
@@ -48,11 +51,7 @@ def model_structure():
     model.add(Dense(s.ACTIONS.shape[0], activation='softmax'))
     return model
 
-def save_model():
-    return
-
-if __name__ == '__main__':
-    
+def train():
     sequences, labels = load_data()
     X = np.array(sequences)
     y = to_categorical(labels).astype(int)
@@ -65,18 +64,27 @@ if __name__ == '__main__':
     model.compile(optimizer='Adam', loss='categorical_crossentropy', metrics=['categorical_accuracy'])
 
     model.fit(X_train, y_train, epochs=2000, callbacks=[tb_callback])
-    model.save(os.path.join(s.MODELS_DIR,"test"))
+    model.save(os.path.join(s.MODELS_DIR,"test.h5"))
 
-    exit()
+def test():
+    model = model_structure()
+    model.load_weights('action.h5')
 
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description='Modeling')
+    parser.add_argument('--train', action='store_true')
+    parser.add_argument('--test',action = "store",nargs=2, type=str)
+    args = parser.parse_args()
+    return args
+
+if __name__ == '__main__':
     global_args = parse_args()
-    args.prepare_directories = global_args.prepare_directories
-    args.clear_data = global_args.clear_data
-    args.clear_actions = global_args.clear_actions
+    args.train = global_args.train
+    args.test = global_args.test
 
-    if args.clear_actions == True:
-        ...
-    elif args.prepare_directories:
-        ...
-    elif args.clear_data:
-        ...
+    if args.train == True:
+        train()
+    elif args.test is not None:
+        test()
