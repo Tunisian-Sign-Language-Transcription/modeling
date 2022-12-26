@@ -58,6 +58,11 @@ you can run the model on the collected dataset by executing this script (the mod
 ```
 python model.py --train
 ```
+to Monitor the training performance of your model run this command within the scripts/Logs/train directory and then grab the generated url and put it in a browser
+```
+tensorboard --logdir=.
+```
+
 ### Real Time testing
 You can test the model once trained on real time feed of your webcam by running this command (make sure the model exists in models/ directory)
 
