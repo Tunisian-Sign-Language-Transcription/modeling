@@ -42,8 +42,21 @@ Now that you have your directory ready, you can start collecting your datset usi
 python cam.py --collect-data
 ```
 
+you can also play a recorded sequence of a specific action by running the following command
+```
+python cam.py --play {ACTION} {SEQUENCE_NUMBER}
+```
+
+
 ## Running the model
 you can run the model on the collected dataset by executing this script (the model will be stored in the models directory)
 ```
-python model.py 
+python model.py --train
+```
+### Real Time testing
+You can test the model once trained on real time feed of your webcam by running this command (make sure the model exists in models/ directory)
+
+```
+python cam.py --test
+
 ```
