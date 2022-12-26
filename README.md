@@ -21,6 +21,7 @@ First, start by adding the words you want to classify to ACTIONS in scripts/sett
 ACTIONS = np.array(['word_1', 'word_2', 'word_3'])
 ```
 You can set the number of sequences for each action and the length of each sequence (frames)
+
 ```python
 NO_SEQUENCES = 10
 SEQUENCE_LENGTH = 30
