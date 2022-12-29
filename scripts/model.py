@@ -9,11 +9,9 @@ import abc
 import settings as s
 import numpy as np
 import os
+import tensorflowjs as tfjs
 
 args = abc.abstractproperty()
-
-
-
 
 
 def parse_args():
@@ -26,24 +24,26 @@ def parse_args():
     return args
 
 
-
 def load_data():
-    label_map = {label:num for num, label in enumerate(s.ACTIONS)}
+    label_map = {label: num for num, label in enumerate(s.ACTIONS)}
     sequences, labels = [], []
     for action in s.ACTIONS:
         for sequence in np.array(os.listdir(os.path.join(s.JOINTS_DATA_DIR, action))).astype(int):
             window = []
-            for frame_num in range(1,s.SEQUENCE_LENGTH+1):
-                res = np.load(os.path.join(s.JOINTS_DATA_DIR, action, str(sequence), "{}.npy".format(frame_num)))
+            for frame_num in range(1, s.SEQUENCE_LENGTH+1):
+                res = np.load(os.path.join(s.JOINTS_DATA_DIR, action, str(
+                    sequence), "{}.npy".format(frame_num)))
                 window.append(res)
             sequences.append(window)
             labels.append(label_map[action])
 
     return sequences, labels
 
+
 def model_structure():
     model = Sequential()
-    model.add(LSTM(64, return_sequences=True, activation='relu', input_shape=(30,258)))
+    model.add(LSTM(64, return_sequences=True,
+              activation='relu', input_shape=(30, 258)))
     model.add(LSTM(128, return_sequences=True, activation='relu'))
     model.add(LSTM(64, return_sequences=False, activation='relu'))
     model.add(Dense(64, activation='relu'))
@@ -51,20 +51,24 @@ def model_structure():
     model.add(Dense(s.ACTIONS.shape[0], activation='softmax'))
     return model
 
-def train():
+
+def train(model_name):
     sequences, labels = load_data()
     X = np.array(sequences)
     y = to_categorical(labels).astype(int)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.05)
-    
+
     log_dir = os.path.join('Logs')
     tb_callback = TensorBoard(log_dir=log_dir)
-    
+
     model = model_structure()
-    model.compile(optimizer='Adam', loss='categorical_crossentropy', metrics=['categorical_accuracy'])
+    model.compile(optimizer='Adam', loss='categorical_crossentropy',
+                  metrics=['categorical_accuracy'])
 
     model.fit(X_train, y_train, epochs=2000, callbacks=[tb_callback])
-    model.save(os.path.join(s.MODELS_DIR,"test.h5"))
+    model.save(os.path.join(s.MODELS_DIR, f'{model_name}.h5'))
+    tfjs.converters.save_keras_model(model, s.MODELS_DIR)
+
 
 def test():
     model = model_structure()
@@ -74,17 +78,18 @@ def test():
 def parse_args():
     parser = argparse.ArgumentParser(
         description='Modeling')
-    parser.add_argument('--train', action='store_true')
-    parser.add_argument('--test',action = "store",nargs=2, type=str)
+    parser.add_argument('--train', action='store', nargs=1, type=str)
+    parser.add_argument('--test', action='store', nargs=2, type=str)
     args = parser.parse_args()
     return args
+
 
 if __name__ == '__main__':
     global_args = parse_args()
     args.train = global_args.train
     args.test = global_args.test
 
-    if args.train == True:
-        train()
+    if args.train is not None:
+        train(args.train)
     elif args.test is not None:
         test()

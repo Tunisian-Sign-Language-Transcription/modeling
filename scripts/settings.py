@@ -13,7 +13,7 @@ MODELS_DIR = os.path.join(ROOT_DIR,'models')
 
 SEQUENCE_COLLECTION_WAIT = 2000
 
-ACTIONS = np.array(['sourd','rdv'])
-NO_SEQUENCES = 10
+ACTIONS = np.array(['sourd' ,'rdv'])
+NO_SEQUENCES = 2
 SEQUENCE_LENGTH = 30
 START_FOLDER = 1

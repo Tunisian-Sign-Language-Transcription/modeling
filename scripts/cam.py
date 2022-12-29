@@ -127,7 +127,7 @@ def collect_data():
 
                     saved_path = os.path.join(s.DATA_DIR,"saved",action,str(sequence),f'{frame_num}.jpg')
                     #print(path)
-                    cv2.imwrite(saved_path, image) 
+                    #cv2.imwrite(saved_path, image) 
 
 
                     if cv2.waitKey(10) & 0xFF == ord('q'):
@@ -155,7 +155,7 @@ def test():
     threshold = 0.5
 
     model = model_structure()
-    model.load_weights(os.path.join(s.MODELS_DIR,'test.h5'))
+    model.load_weights(os.path.join(s.MODELS_DIR,'tounssi.h5'))
 
     cap = cv2.VideoCapture(0)
     # Set mediapipe model 
@@ -167,7 +167,6 @@ def test():
 
             # Make detections
             image, results = mediapipe_detection(frame, holistic)
-            print(results)
             
             # Draw landmarks
             draw_styled_landmarks(image, results)
@@ -175,11 +174,15 @@ def test():
             # 2. Prediction logic
             keypoints = extract_keypoints(results)
             sequence.append(keypoints)
+
             sequence = sequence[-30:]
+
+
             
             if len(sequence) == 30:
+                #print(np.expand_dims(sequence, axis=0).shape)
                 res = model.predict(np.expand_dims(sequence, axis=0))[0]
-                print(s.ACTIONS[np.argmax(res)])
+                #print(s.ACTIONS[np.argmax(res)])
                 predictions.append(np.argmax(res))
                 
                 
@@ -197,8 +200,8 @@ def test():
                     sentence = sentence[-5:]
 
                 # Viz probabilities
-                image = prob_viz(res, s.ACTIONS, image, colors)
-                
+                #image = prob_viz(res, s.ACTIONS, image, colors)
+                print(s.ACTIONS[np.argmax(res)])
             cv2.rectangle(image, (0,0), (640, 40), (245, 117, 16), -1)
             cv2.putText(image, ' '.join(sentence), (3,30), 
                         cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
