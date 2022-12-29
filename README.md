@@ -1,4 +1,4 @@
-# modeling
+# Modeling
 ## Installation
 ### Virtual environement
 ```
@@ -20,20 +20,26 @@ First, start by adding the words you want to classify to ACTIONS in scripts/sett
 ```python
 ACTIONS = np.array(['word_1', 'word_2', 'word_3'])
 ```
+You can set the number of sequences for each action and the length of each sequence (frames)
+
+```python
+NO_SEQUENCES = 10
+SEQUENCE_LENGTH = 30
+```
 
 run the following script to generate the dataset directories in data/joints (always run the scripts from withtin the scripts directory
 ```
-python data_preparation --prepare-directories
+python data_preparation.py --init
 ```
 
 if you want to clear actions in a folder use
 ```
-python data_preparation --clear-actions
+python data_preparation.py --clear-actions
 ```
 
 if you want to clear data 
 ```
-python data_preparation --clear-data
+python data_preparation.py --clear-data
 ```
 
 ## Collecting Data
@@ -42,8 +48,25 @@ Now that you have your directory ready, you can start collecting your datset usi
 python cam.py --collect-data
 ```
 
+you can also play a recorded sequence of a specific action by running the following command
+```
+python cam.py --play {ACTION} {SEQUENCE_NUMBER}
+```
+
+
 ## Running the model
 you can run the model on the collected dataset by executing this script (the model will be stored in the models directory)
 ```
-python model.py 
+python model.py --train
+```
+to Monitor the training performance of your model run this command within the scripts/Logs/train directory and then grab the generated url and put it in a browser
+```
+tensorboard --logdir=.
+```
+
+### Real Time testing
+You can test the model once trained on real time feed of your webcam by running this command (make sure the model exists in models/ directory)
+
+```
+python cam.py --test
 ```
