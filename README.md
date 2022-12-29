@@ -29,7 +29,7 @@ SEQUENCE_LENGTH = 30
 
 run the following script to generate the dataset directories in data/joints (always run the scripts from withtin the scripts directory
 ```
-python data_preparation.py --prepare-directories
+python data_preparation.py --init
 ```
 
 if you want to clear actions in a folder use
