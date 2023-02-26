@@ -90,52 +90,76 @@ def play_sequence(action,sequence_num):
             break
     cv2.destroyAllWindows()
 
-    
 
-def collect_data():
-    cap = cv2.VideoCapture(0)
-    with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
-        for action in s.ACTIONS:
-            fps = cap.get(cv2.CAP_PROP_FPS)
+
+def collect_data(source="cam",video_name=""):
+
+    if source == "saved":
+        video_path = os.path.join(s.DATA_DIR,"saved","raw",f'{video_name}.mp4')
+        os.makedirs(os.path.join(s.DATA_DIR,"saved","joints",video_name,"1"))
+
+
+        cap = cv2.VideoCapture(video_path)
+
+        with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
+            ret, frame= cap.read()
+
+            for frame_num in range(1,s.SEQUENCE_LENGTH+1):
+                ret, frame = cap.read()
+                image, results = mediapipe_detection(frame,holistic)
+                keypoints = extract_keypoints(results)
+                trg_path = os.path.join(s.DATA_DIR,"saved","joints")
+                save_keypoints(trg_path,video_name,1,frame_num,keypoints)
             
-            ret, frame = cap.read()
+            cap.release()
+            cv2.destroyAllWindows()
 
 
-            cv2.putText(frame, f'STARTING COLLECTION for {action}', (120,200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255, 0), 4, cv2.LINE_AA)
-            cv2.imshow('OpenCV Feed', frame)
-            cv2.waitKey(s.SEQUENCE_COLLECTION_WAIT)
 
-
-            for sequence in range(s.START_FOLDER,s.START_FOLDER+s.NO_SEQUENCES):
+    if source=="cam":
+        cap = cv2.VideoCapture(0)
+        with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
+            for action in s.ACTIONS:
+                fps = cap.get(cv2.CAP_PROP_FPS)
+                
                 ret, frame = cap.read()
 
 
-                cv2.putText(frame, f'SEQUENCE  {sequence}', (120,200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255, 0), 4, cv2.LINE_AA)
+                cv2.putText(frame, f'STARTING COLLECTION for {action}', (120,200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255, 0), 4, cv2.LINE_AA)
                 cv2.imshow('OpenCV Feed', frame)
                 cv2.waitKey(s.SEQUENCE_COLLECTION_WAIT)
 
 
-                for frame_num in range(1,s.SEQUENCE_LENGTH+1):
+                for sequence in range(s.START_FOLDER,s.START_FOLDER+s.NO_SEQUENCES):
                     ret, frame = cap.read()
-                    image, results = mediapipe_detection(frame,holistic)
-                    draw_styled_landmarks(image,results)
-                    
-                    cv2.putText(image,f'Collecting frames for {action} video Number {sequence} frame {frame_num}',(15,12),cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
-                    cv2.imshow('OpenCV Feed', image)
-                    keypoints = extract_keypoints(results)
-                    save_keypoints(action,sequence,frame_num,keypoints)
-
-                    saved_path = os.path.join(s.DATA_DIR,"saved",action,str(sequence),f'{frame_num}.jpg')
-                    #print(path)
-                    #cv2.imwrite(saved_path, image) 
 
 
-                    if cv2.waitKey(10) & 0xFF == ord('q'):
-                        break
-                    
+                    cv2.putText(frame, f'SEQUENCE  {sequence}', (120,200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255, 0), 4, cv2.LINE_AA)
+                    cv2.imshow('OpenCV Feed', frame)
+                    cv2.waitKey(s.SEQUENCE_COLLECTION_WAIT)
 
-        cap.release()
-        cv2.destroyAllWindows()
+
+                    for frame_num in range(1,s.SEQUENCE_LENGTH+1):
+                        ret, frame = cap.read()
+                        image, results = mediapipe_detection(frame,holistic)
+                        draw_styled_landmarks(image,results)
+                        
+                        cv2.putText(image,f'Collecting frames for {action} video Number {sequence} frame {frame_num}',(15,12),cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
+                        cv2.imshow('OpenCV Feed', image)
+                        keypoints = extract_keypoints(results)
+                        save_keypoints(s.JOINTS_DATA_DIR,action,sequence,frame_num,keypoints)
+
+                        saved_path = os.path.join(s.DATA_DIR,"saved",action,str(sequence),f'{frame_num}.jpg')
+                        #print(path)
+                        #cv2.imwrite(saved_path, image) 
+
+
+                        if cv2.waitKey(10) & 0xFF == ord('q'):
+                            break
+                        
+
+            cap.release()
+            cv2.destroyAllWindows()
 
 
 
@@ -223,21 +247,27 @@ def parse_args():
     parser.add_argument('--collect-data', action='store_true')
     parser.add_argument('--play',action = "store",nargs=2, type=str)
     parser.add_argument('--test',action = "store_true")
+    parser.add_argument('--saved',action = "store", nargs=1, type=str)
     args = parser.parse_args()
     return args
 
 
 if __name__ == '__main__':
+
     global_args = parse_args()
     args.draw_joints = global_args.draw_joints
     args.draw_styled_joints = global_args.draw_styled_joints
     args.collect_data = global_args.collect_data
     args.play = global_args.play
     args.test = global_args.test
+    args.saved = global_args.saved
     if args.play is not None:
         play_sequence(args.play[0],int(args.play[1]))
-    elif  args.collect_data==True:
-        collect_data()
+    elif args.collect_data==True:
+        if args.saved is not None:
+            collect_data(source="saved",video_name=args.saved[0])
+        else:
+            collect_data()
     elif args.test == True:
         test()
     else:

@@ -24,18 +24,34 @@ def parse_args():
     return args
 
 
-def load_data():
-    label_map = {label: num for num, label in enumerate(s.ACTIONS)}
+def load_data(source="cam"):
+    
     sequences, labels = [], []
-    for action in s.ACTIONS:
-        for sequence in np.array(os.listdir(os.path.join(s.JOINTS_DATA_DIR, action))).astype(int):
-            window = []
-            for frame_num in range(1, s.SEQUENCE_LENGTH+1):
-                res = np.load(os.path.join(s.JOINTS_DATA_DIR, action, str(
-                    sequence), "{}.npy".format(frame_num)))
-                window.append(res)
-            sequences.append(window)
-            labels.append(label_map[action])
+
+
+    if (source == "saved"):
+        label_map = {label: num for num, label in enumerate(s.SAVED_ACTIONS)}
+        for action in s.SAVED_ACTIONS:
+            for sequence in np.array(os.listdir(os.path.join(s.SAVED_JOINTS_DATA_DIR,action))).astype(int):
+                window = []
+                for frame_num in range(1, s.SEQUENCE_LENGTH+1):
+                    res = np.load(os.path.join(s.SAVED_JOINTS_DATA_DIR,action,str(sequence),f'{frame_num}.npy'))
+                    window.append(res)
+
+                sequences.append(window)
+                labels.append(label_map[action])
+
+    if (source=="cam"):
+        label_map = {label: num for num, label in enumerate(s.ACTIONS)}
+        for action in s.ACTIONS:
+            for sequence in np.array(os.listdir(os.path.join(s.JOINTS_DATA_DIR, action))).astype(int):
+                window = []
+                for frame_num in range(1, s.SEQUENCE_LENGTH+1):
+                    res = np.load(os.path.join(s.JOINTS_DATA_DIR, action, str(
+                        sequence), "{}.npy".format(frame_num)))
+                    window.append(res)
+                sequences.append(window)
+                labels.append(label_map[action])
 
     return sequences, labels
 
@@ -85,6 +101,7 @@ def parse_args():
 
 
 if __name__ == '__main__':
+
     global_args = parse_args()
     args.train = global_args.train
     args.test = global_args.test
