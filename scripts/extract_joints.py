@@ -25,9 +25,9 @@ def extract_keypoints(results):
     return np.concatenate([pose, lh, rh])
 
 
-def save_keypoints(action,sequence,frame,keypoints):
+def save_keypoints(path,action,sequence,frame,keypoints):
     filename = os.path.join(action,str(sequence),str(frame))
-    full_file_path = os.path.join(s.JOINTS_DATA_DIR,filename)
+    full_file_path = os.path.join(path,filename)
     np.save(full_file_path, keypoints)
 
 
