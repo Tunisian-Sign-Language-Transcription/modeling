@@ -13,21 +13,27 @@ import warnings
 warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
 
 
+
+
 class TransformerBlock(Layer):
     def __init__(self, embed_dim, num_heads, ff_dim, rate=0.1):
         super(TransformerBlock, self).__init__()
         self.att = MultiHeadAttention(num_heads=num_heads, key_dim=embed_dim)
         self.ffn = Sequential(
-            [Dense(ff_dim, activation="relu"),
-             Dense(embed_dim),]
+            [
+                Dense(ff_dim, activation="relu"),
+                Dense(embed_dim), ]
         )
         self.layernorm1 = LayerNormalization(epsilon=1e-6)
         self.layernorm2 = LayerNormalization(epsilon=1e-6)
 
         self.dropout1 = Dropout(rate)
         self.dropout2 = Dropout(rate)
+        
 
     def call(self, inputs, training):
+
+        
         attn_output = self.att(inputs, inputs)
         attn_output = self.dropout1(attn_output, training=training)
         out1 = self.layernorm1(inputs + attn_output)
@@ -43,49 +49,57 @@ class PositionEmbedding(Layer):
         self.pos_emb = Embedding(input_dim=maxlen, output_dim=embed_dim)
 
     def call(self, x):
-        maxlen = tf.shape(x)[-1]
+        maxlen = s.MAXLEN
         positions = tf.range(start=0, limit=maxlen, delta=1)
+        # vector of 30 integers -> tensor of shape (30, 258)
         positions = self.pos_emb(positions)
 
         return x + positions
 
 
-def create_model():
-    inputs = Input(shape=(s.MAXLEN,))
-    embedding_layer = PositionEmbedding(s.MAXLEN, embed_dim=s.EMBED_DIM)
-    x = embedding_layer(inputs)
+    
+
+
+if __name__ == '__main__':
+    
+    sequences, labels = load_data()
+
+    X = np.array(sequences)
+    #y = to_categorical(labels).astype(int)
+    y = np.array(labels)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.05)
+
+    
+
+    embedding_layer = PositionEmbedding(maxlen=s.MAXLEN, embed_dim=s.EMBED_DIM)
     transformer_block = TransformerBlock(s.EMBED_DIM, s.NUM_HEADS, s.FF_DIM)
+
+    inputs = Input(shape=(s.MAXLEN,s.EMBED_DIM))
+    x = embedding_layer(inputs)
     x = transformer_block(x)
+
     x = GlobalAveragePooling1D()(x)
     x = Dropout(0.1)(x)
     x = Dense(20, activation="relu")(x)
     x = Dropout(0.1)(x)
-    outputs = Dense(2, activation="softmax")
+    outputs = Dense(2, activation="softmax")(x)
 
     model = Model(inputs=inputs, outputs=outputs)
-    return model
-
-
-if __name__ == '__main__':
-    sequences, labels = load_data()
-
-    X = np.array(sequences)
-    y = to_categorical(labels).astype(int)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.05)
-
-    model = create_model()
 
     model.compile(
         optimizer="adam",
         loss="sparse_categorical_crossentropy",
-        metric=["accuracy"]
+        metrics=["accuracy"]
     )
+
+
+    
 
     history = model.fit(
         X_train,
         y_train,
-        batch_size=64,
-        epochs=2,
+        #batch_size=64,
+        epochs=20,
         validation_data=(X_test, y_test)
     )
 

@@ -15,11 +15,11 @@ SAVED_JOINTS_DATA_DIR = os.path.join(DATA_DIR,'saved','joints')
 
 SEQUENCE_COLLECTION_WAIT = 2000
 
-ACTIONS = np.array(['sourd' ,'rdv'])
+ACTIONS = np.array(['rdv','sourd'])
 
 SAVED_ACTIONS = np.array(['test'])
 
-NO_SEQUENCES = 2
+NO_SEQUENCES = 10
 SEQUENCE_LENGTH = 30
 START_FOLDER = 1
 
