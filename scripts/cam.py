@@ -253,7 +253,6 @@ def parse_args():
 
 
 if __name__ == '__main__':
-
     global_args = parse_args()
     args.draw_joints = global_args.draw_joints
     args.draw_styled_joints = global_args.draw_styled_joints

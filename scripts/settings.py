@@ -15,10 +15,20 @@ SAVED_JOINTS_DATA_DIR = os.path.join(DATA_DIR,'saved','joints')
 
 SEQUENCE_COLLECTION_WAIT = 2000
 
-ACTIONS = np.array(['sourd' ,'rdv'])
+ACTIONS = np.array(['rdv','sourd'])
 
 SAVED_ACTIONS = np.array(['test'])
 
-NO_SEQUENCES = 2
+NO_SEQUENCES = 10
 SEQUENCE_LENGTH = 30
 START_FOLDER = 1
+
+
+## Transfomer Hyperparameters
+
+MAXLEN = 30     # Only consider the first 30 frames of each sequence
+
+EMBED_DIM = 258 # Embedding size of each token
+NUM_HEADS = 2   # Number of attention heads 
+FF_DIM = 32     # Hidden layer size in feed forward network
+
