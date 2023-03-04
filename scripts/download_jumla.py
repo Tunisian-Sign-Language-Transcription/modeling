@@ -11,7 +11,7 @@ keys = []
 txt_file = open("s3-uris.txt", "r")
 
 
-### HERE
+### CHOOSE YOUR RANGE HERE
 begin = 12
 end = 24
 ###
