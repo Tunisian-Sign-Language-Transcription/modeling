@@ -10,6 +10,7 @@ import settings as s
 import numpy as np
 import os
 import tensorflowjs as tfjs
+from transformer import *
 
 args = abc.abstractproperty()
 
@@ -28,35 +29,33 @@ def load_data(source="cam"):
     
     sequences, labels = [], []
 
-
     if (source == "saved"):
-        label_map = {label: num for num, label in enumerate(s.SAVED_ACTIONS)}
-        for action in s.SAVED_ACTIONS:
-            for sequence in np.array(os.listdir(os.path.join(s.SAVED_JOINTS_DATA_DIR,action))).astype(int):
-                window = []
-                for frame_num in range(1, s.SEQUENCE_LENGTH+1):
-                    res = np.load(os.path.join(s.SAVED_JOINTS_DATA_DIR,action,str(sequence),f'{frame_num}.npy'))
-                    window.append(res)
+        actions = s.SAVED_ACTIONS
+        joints_trg = s.SAVED_JOINTS_DATA_DIR
+    elif (source == "cam"):
+        actions = s.ACTIONS
+        joints_trg = s.JOINTS_DATA_DIR
+    else:
+        print("Source not specified.")
+        exit()
 
-                sequences.append(window)
-                labels.append(label_map[action])
+    label_map = {label: num for num, label in enumerate(actions)}
+    for action in actions:
+        for sequence in np.array(os.listdir(os.path.join(joints_trg,action))).astype(int):
+            window = []
+            for frame_num in range(1, s.SEQUENCE_LENGTH+1):
+                res = np.load(os.path.join(joints_trg,action,str(sequence),f'{frame_num}.npy'))
+                window.append(res)
 
-    if (source=="cam"):
-        label_map = {label: num for num, label in enumerate(s.ACTIONS)}
-        for action in s.ACTIONS:
-            for sequence in np.array(os.listdir(os.path.join(s.JOINTS_DATA_DIR, action))).astype(int):
-                window = []
-                for frame_num in range(1, s.SEQUENCE_LENGTH+1):
-                    res = np.load(os.path.join(s.JOINTS_DATA_DIR, action, str(
-                        sequence), "{}.npy".format(frame_num)))
-                    window.append(res)
-                sequences.append(window)
-                labels.append(label_map[action])
+            sequences.append(window)
+            labels.append(label_map[action])
+
 
     return sequences, labels
 
 
-def model_structure():
+
+def build_lstm_pose_model():
     model = Sequential()
     model.add(LSTM(64, return_sequences=True,
               activation='relu', input_shape=(30, 258)))
@@ -77,7 +76,7 @@ def train(model_name):
     log_dir = os.path.join('Logs')
     tb_callback = TensorBoard(log_dir=log_dir)
 
-    model = model_structure()
+    model = build_lstm_pose_model()
     model.compile(optimizer='Adam', loss='categorical_crossentropy',
                   metrics=['categorical_accuracy'])
 
@@ -87,7 +86,7 @@ def train(model_name):
 
 
 def test():
-    model = model_structure()
+    model = build_lstm_pose_model()
     model.load_weights('action.h5')
 
 
@@ -101,7 +100,6 @@ def parse_args():
 
 
 if __name__ == '__main__':
-
     global_args = parse_args()
     args.train = global_args.train
     args.test = global_args.test
