@@ -10,6 +10,7 @@ from tensorflow.keras.datasets import imdb
 from tensorflow.keras.models import Sequential, Model
 import numpy as np
 import warnings
+import os
 warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
 
 
@@ -57,27 +58,13 @@ class PositionEmbedding(Layer):
         return x + positions
 
 
-    
-
-
-if __name__ == '__main__':
-    
-    sequences, labels = load_data()
-
-    X = np.array(sequences)
-    #y = to_categorical(labels).astype(int)
-    y = np.array(labels)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.05)
-
-    
-
+def build_transformer_pose_model():
     embedding_layer = PositionEmbedding(maxlen=s.MAXLEN, embed_dim=s.EMBED_DIM)
     transformer_block = TransformerBlock(s.EMBED_DIM, s.NUM_HEADS, s.FF_DIM)
 
     inputs = Input(shape=(s.MAXLEN,s.EMBED_DIM))
     x = embedding_layer(inputs)
     x = transformer_block(x)
-
     x = GlobalAveragePooling1D()(x)
     x = Dropout(0.1)(x)
     x = Dense(20, activation="relu")(x)
@@ -85,15 +72,21 @@ if __name__ == '__main__':
     outputs = Dense(2, activation="softmax")(x)
 
     model = Model(inputs=inputs, outputs=outputs)
+    return model
+
+def train_transformer_model(model_name):
+    sequences, labels = load_data()
+
+    X = np.array(sequences)
+    y = np.array(labels)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.05)
+    model = build_transformer_pose_model()
 
     model.compile(
         optimizer="adam",
         loss="sparse_categorical_crossentropy",
         metrics=["accuracy"]
     )
-
-
-    
 
     history = model.fit(
         X_train,
@@ -103,9 +96,28 @@ if __name__ == '__main__':
         validation_data=(X_test, y_test)
     )
 
-    results = model.evaluate(X_test, y_test, verbose=2)
+    """results = model.evaluate(X_test, y_test, verbose=2)
 
     for name, value in zip(model.metrics_names, results):
-        print("%s: %.3f" % (name, value))
+        print("%s: %.3f" % (name, value))"""
+    
+    model_ouput_path = os.path.join(s.MODELS_DIR,model_name)
+    model.save_weights(model_ouput_path)
 
-    model.save_weights("transf.h5")
+
+
+
+    
+    
+
+
+
+
+
+    
+
+    
+
+    
+
+    
