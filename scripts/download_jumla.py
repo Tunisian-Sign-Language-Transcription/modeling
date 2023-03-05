@@ -15,14 +15,20 @@ txt_file = open("s3-uris.txt", "r")
 
 f = open("index.txt", "r")
 
-index = int(f.read()) -1
+
+
+index = int(f.read()) 
+
+
 
 ### CHOOSE YOUR RANGE HERE
-end = 1000
+end = 806
 ###
 keys = txt_file.readlines()
 total = end - index
+
 filtered_keys = [key.strip() for key in keys if 'rec0' in key.strip()][index:end]
+
 
 
 for key in filtered_keys:
@@ -36,11 +42,11 @@ for key in filtered_keys:
         video_output_path = os.path.join(sign_dir_path,f'{video["participant"]}.svo')
 
         if os.path.exists(sign_dir_path):
-            index+=1
             with open('index.txt', 'w') as f:
                 f.write(str(index))
             print(f'Downloading ({index}/{total}): Sign: {video["sign_code"]} :Participant: {video["participant"]}')
             s3.Bucket(BUCKET_NAME).download_file(key[19:].strip(), video_output_path)
+            index+=1
         else:
             os.mkdir(sign_dir_path)
 

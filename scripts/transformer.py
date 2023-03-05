@@ -1,7 +1,6 @@
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.utils import to_categorical
 import settings as s
-from model import load_data
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.layers import MultiHeadAttention, LayerNormalization, Dropout, Layer
@@ -13,7 +12,7 @@ import warnings
 import os
 warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
 
-
+from data_preparation import load_data
 
 
 class TransformerBlock(Layer):
@@ -68,7 +67,7 @@ def build_transformer_pose_model():
     x = Dropout(0.1)(x)
     x = Dense(20, activation="relu")(x)
     x = Dropout(0.1)(x)
-    outputs = Dense(2, activation="softmax")(x)
+    outputs = Dense(s.ACTIONS.shape[0], activation="softmax")(x)
 
     model = Model(inputs=inputs, outputs=outputs)
     return model
@@ -91,17 +90,11 @@ def train_transformer_model(model_name):
         X_train,
         y_train,
         #batch_size=64,
-        epochs=20,
+        epochs=s.TRANSFORMER_EPOCHS,
         validation_data=(X_test, y_test)
     )
-
-    """results = model.evaluate(X_test, y_test, verbose=2)
-
-    for name, value in zip(model.metrics_names, results):
-        print("%s: %.3f" % (name, value))"""
     
-    model_ouput_path = os.path.join(s.MODELS_DIR,model_name)
-    model.save_weights(model_ouput_path)
+    model.save_weights(os.path.join(s.MODELS_DIR, f'{model_name}.h5'))
 
 
 

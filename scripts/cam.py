@@ -172,14 +172,23 @@ def prob_viz(res, actions, input_frame, colors):
         
     return output_frame
 
-def test():
+def test(model,model_name):
     sequence = []
     sentence = []
     predictions = []
     threshold = 0.5
 
-    model = model_structure()
-    model.load_weights(os.path.join(s.MODELS_DIR,'tounssi.h5'))
+    if model == 'transformer':
+        model = build_transformer_pose_model()
+    elif model  == 'lstm':
+        model = build_lstm_pose_model()
+    else:
+        print("This architecture doesn't exist")
+        exit()
+
+    model.load_weights(os.path.join(s.MODELS_DIR,f'{model_name}.h5'))
+
+    
 
     cap = cv2.VideoCapture(0)
     # Set mediapipe model 
@@ -246,7 +255,7 @@ def parse_args():
     parser.add_argument('--draw-styled-joints', action='store_true')
     parser.add_argument('--collect-data', action='store_true')
     parser.add_argument('--play',action = "store",nargs=2, type=str)
-    parser.add_argument('--test',action = "store_true")
+    parser.add_argument('--test',action = "store",nargs=2, type=str)
     parser.add_argument('--saved',action = "store", nargs=1, type=str)
     args = parser.parse_args()
     return args
@@ -267,7 +276,7 @@ if __name__ == '__main__':
             collect_data(source="saved",video_name=args.saved[0])
         else:
             collect_data()
-    elif args.test == True:
-        test()
+    elif args.test is not None:
+        test(args.test[0],args.test[1])
     else:
         display(args.draw_joints,args.draw_styled_joints)

@@ -5,6 +5,8 @@ import argparse
 import abc
 import shutil
 import glob
+import numpy as np
+
 args = abc.abstractproperty()
 
 
@@ -41,6 +43,35 @@ def clear_data():
                     if os.path.exists(path):
                         os.remove(path)
 
+
+
+def load_data(source="cam"):
+    
+    sequences, labels = [], []
+
+    if (source == "saved"):
+        actions = s.SAVED_ACTIONS
+        joints_trg = s.SAVED_JOINTS_DATA_DIR
+    elif (source == "cam"):
+        actions = s.ACTIONS
+        joints_trg = s.JOINTS_DATA_DIR
+    else:
+        print("Source not specified.")
+        exit()
+
+    label_map = {label: num for num, label in enumerate(actions)}
+    for action in actions:
+        for sequence in np.array(os.listdir(os.path.join(joints_trg,action))).astype(int):
+            window = []
+            for frame_num in range(1, s.SEQUENCE_LENGTH+1):
+                res = np.load(os.path.join(joints_trg,action,str(sequence),f'{frame_num}.npy'))
+                window.append(res)
+
+            sequences.append(window)
+            labels.append(label_map[action])
+
+
+    return sequences, labels
 
 
 def parse_args():
