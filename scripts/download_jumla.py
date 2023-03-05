@@ -2,6 +2,7 @@ import boto3
 import botocore
 import os
 import settings as s
+import re
 
 BUCKET_NAME = 'ieee-dataport' 
 
@@ -11,30 +12,38 @@ keys = []
 txt_file = open("s3-uris.txt", "r")
 
 
+
+f = open("index.txt", "r")
+
+index = int(f.read()) -1
+
 ### CHOOSE YOUR RANGE HERE
-begin = 12
-end = 24
+end = 1000
 ###
-
-
-
 keys = txt_file.readlines()
-
-total = len(keys)
-
-keys = keys[begin:end]
+total = end - index
+filtered_keys = [key.strip() for key in keys if 'rec0' in key.strip()][index:end]
 
 
-index = begin
-
-
-for key in keys:
+for key in filtered_keys:
     try:
-        output = f'{key.split("/")[-3]}_{key.split("/")[-2]}_{key.split("/")[-1].split(".")[-2]}.{keys[0].split(".")[-1]}'
-        index +=1
-        print(f'Downloading ({index}/{total}): {output}')
-        output_path = os.path.join(s.DATA_DIR,"jumla","svo",output)
-        s3.Bucket(BUCKET_NAME).download_file(key[19:].strip(), output_path.strip())
+        video = {}
+        video['participant'] = key.split('/')[-3]
+        video['sign_code'] = re.findall(r'\d+',key.split('/')[-2])[0]
+
+
+        sign_dir_path = os.path.join(s.DATA_DIR,'jumla','raw',video['sign_code']) 
+        video_output_path = os.path.join(sign_dir_path,f'{video["participant"]}.svo')
+
+        if os.path.exists(sign_dir_path):
+            index+=1
+            with open('index.txt', 'w') as f:
+                f.write(str(index))
+            print(f'Downloading ({index}/{total}): Sign: {video["sign_code"]} :Participant: {video["participant"]}')
+            s3.Bucket(BUCKET_NAME).download_file(key[19:].strip(), video_output_path)
+        else:
+            os.mkdir(sign_dir_path)
+
     except botocore.exceptions.ClientError as e:
         if e.response['Error']['Code'] == "404":
             print("The object does not exist.")

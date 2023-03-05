@@ -34,7 +34,6 @@ class TransformerBlock(Layer):
 
     def call(self, inputs, training):
 
-        
         attn_output = self.att(inputs, inputs)
         attn_output = self.dropout1(attn_output, training=training)
         out1 = self.layernorm1(inputs + attn_output)
