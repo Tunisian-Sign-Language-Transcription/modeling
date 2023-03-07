@@ -3,7 +3,7 @@
 ### Virtual environement
 ```
 conda create --name tsl-classification-envir python=3.8
-conda activate pose-lstm
+conda activate tsl-classification-envir 
 cd scripts
 ```
 ### Dependencies
