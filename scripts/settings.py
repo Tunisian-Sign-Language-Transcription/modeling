@@ -3,6 +3,7 @@ import numpy as np
 import os
 
 
+
 FPS = 30
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -15,7 +16,7 @@ SAVED_JOINTS_DATA_DIR = os.path.join(DATA_DIR,'saved','joints')
 
 SEQUENCE_COLLECTION_WAIT = 2000
 
-ACTIONS = np.array(['rdv','sourd'])
+ACTIONS = np.array([''])
 
 SAVED_ACTIONS = np.array(['test'])
 
@@ -29,7 +30,7 @@ TRAIN_TEST_SPLIT = 0.05
 
 ## LSTM Hyperparameters
 
-LSTM_EPOCHS = 2000
+LSTM_EPOCHS = 30
 
 
 ## Transfomer Hyperparameters
