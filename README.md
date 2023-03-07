@@ -2,7 +2,7 @@
 ## Installation
 ### Virtual environement
 ```
-conda create --name pose-lstm python=3.8
+conda create --name tsl-classification-envir python=3.8
 conda activate pose-lstm
 cd scripts
 ```
