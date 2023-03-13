@@ -24,6 +24,10 @@ import numpy as np
 import cv2
 from pathlib import Path
 import enum
+import os
+from extract_joints import mediapipe_detection, extract_keypoints, save_keypoints
+import mediapipe as mp
+mp_holistic = mp.solutions.holistic 
 
 
 class AppType(enum.Enum):
@@ -39,12 +43,73 @@ def progress_bar(percent_done, bar_length=50):
     sys.stdout.flush()
 
 
-def convert(input_path, output_path):
+
+def convert(input_path,output_path):
+    svo_input_path = input_path
+    output_path = output_path
+
+    init_params = sl.InitParameters()
+    init_params.set_from_svo_file(str(svo_input_path))
+
+    zed = sl.Camera()
+
+    err = zed.open(init_params)
+    if err != sl.ERROR_CODE.SUCCESS:
+        sys.stdout.write(repr(err))
+        zed.close()
+        exit()
+
+    image_size = zed.get_camera_information().camera_resolution
+    width = image_size.width
+
+    left_image = sl.Mat()
+    right_image = sl.Mat()
+
+
+
+    rt_param = sl.RuntimeParameters()
+    rt_param.sensing_mode = sl.SENSING_MODE.FILL
+
+    # Start SVO conversion to AVI/SEQUENCE
+    sys.stdout.write("Converting SVO... Use Ctrl-C to interrupt conversion.\n")
+
+    nb_frames = zed.get_svo_number_of_frames()
+
+    with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
+        while True:
+            if zed.grab(rt_param) == sl.ERROR_CODE.SUCCESS:
+                svo_position = zed.get_svo_position()
+                # Retrieve SVO images
+                zed.retrieve_image(left_image, sl.VIEW.LEFT)
+                zed.retrieve_image(right_image, sl.VIEW.RIGHT)
+                # Generate file names
+                filename1 = os.path.join(output_path,("left%s" % str(svo_position).zfill(6)))
+                # Save Left images
+
+                if svo_position % 10 == 0:
+                    image, results = mediapipe_detection(left_image.get_data(),holistic)
+                    keypoints = extract_keypoints(results)
+                    np.save(filename1,keypoints)
+                    #cv2.imwrite(str(filename1), left_image.get_data())
+                # Display progress
+                progress_bar((svo_position + 1) / nb_frames * 100, 30)
+
+                # Check if we have reached the end of the video
+                if svo_position >= (nb_frames - 1):  # End of SVO
+                    sys.stdout.write("\nSVO end has been reached. Exiting now.\n")
+                    break
+
+
+    zed.close()
+    return 0
+
+
+def convert_(input_path, output_path):
     
     # Get input parameters
     svo_input_path = input_path
     output_path = output_path
-    output_as_video = True    
+    output_as_video = False    
     app_type = AppType.LEFT_AND_RIGHT
     
     
@@ -132,19 +197,19 @@ def convert(input_path, output_path):
                 video_writer.write(ocv_image_sbs_rgb)
             else:
                 # Generate file names
-                filename1 = output_path / ("left%s.png" % str(svo_position).zfill(6))
-                filename2 = output_path / (("right%s.png" if app_type == AppType.LEFT_AND_RIGHT
-                                           else "depth%s.png") % str(svo_position).zfill(6))
+                filename1 = os.path.join(output_path,("left%s.png" % str(svo_position).zfill(6)))
+                filename2 = os.path.join(output_path, (("right%s.png" if app_type == AppType.LEFT_AND_RIGHT
+                                           else "depth%s.png") % str(svo_position).zfill(6)))
                 
                 # Save Left images
                 cv2.imwrite(str(filename1), left_image.get_data())
 
-                if app_type != AppType.LEFT_AND_DEPTH_16:
+                """if app_type != AppType.LEFT_AND_DEPTH_16:
                     # Save right images
                     cv2.imwrite(str(filename2), right_image.get_data())
                 else:
                     # Save depth images (convert to uint16)
-                    cv2.imwrite(str(filename2), depth_image.get_data().astype(np.uint16))
+                    cv2.imwrite(str(filename2), depth_image.get_data().astype(np.uint16))"""
 
             # Display progress
             progress_bar((svo_position + 1) / nb_frames * 100, 30)

@@ -7,6 +7,8 @@ import pandas as pd
 import shutil
 import abc
 import argparse
+import warnings
+warnings.filterwarnings("ignore")
 from svo_export import convert
 
 args = abc.abstractproperty()
@@ -165,22 +167,59 @@ def combine_dataset():
 
 def convert_svo_mp4():
     combined_path = os.path.join(s.DATA_DIR, "jumla","combined")
+    keypoints_path = os.path.join(s.DATA_DIR,"jumla","keypoints")
     signs = os.listdir(combined_path)
     
     for sign in signs:
+        dst_path = os.path.join(keypoints_path,sign)
+        os.makedirs(dst_path)
         sign_path = os.path.join(combined_path,sign)
         videos = os.listdir(sign_path)
+        video_counter = 0
         for video in videos:
+            dst_path = os.path.join(dst_path,f'video_{video_counter}')
+            os.makedirs(dst_path)
+            video_counter +=1
             video_path = os.path.join(sign_path,video)
-            dst_path = os.path.join(sign_path,f'{video.replace(".svo","")}.mp4')
-            #print(video_path,"\n",dst_path)
+
+
             convert(video_path,dst_path)
-            #os.system(command)
+
             exit()
 
     
 
 
+def reverse_map():
+    sign_df = pd.read_excel('./resources/sign_index.xlsx')[['CODE', 'INTENT_ARABIC']]
+    sign_dict = dict(zip(sign_df['INTENT_ARABIC'], sign_df['CODE']))
+
+
+
+    combined_path = os.path.join(s.DATA_DIR,"jumla","combined")
+    arabic_signs = os.listdir(combined_path)
+    for arabic_sign in arabic_signs:
+        if arabic_sign.isnumeric()==False:
+            try:
+                src_path = os.path.join(combined_path,arabic_sign)
+                dst_path = os.path.join(combined_path,str(sign_dict[arabic_sign]))
+                if os.path.exists(src_path) and os.path.exists(dst_path) == False:
+                    os.rename(src_path,dst_path)
+            except:
+                pass
+
+
+def map_normal():
+    sign_df = pd.read_excel('./resources/sign_index.xlsx')[['CODE', 'INTENT_ARABIC']]
+    sign_dict = dict(zip(sign_df['CODE'], sign_df['INTENT_ARABIC']))
+    combined_path = os.path.join(s.DATA_DIR,"jumla","combined")
+    codes = os.listdir(combined_path)
+    for code in codes:
+        if code.isnumeric():
+            src_path = os.path.join(combined_path,code)
+            dst_path = os.path.join(combined_path,sign_dict[int(code)])
+            if os.path.exists(src_path) and os.path.exists(dst_path) == False:
+                    os.rename(src_path,dst_path)
 
 
 def parse_args():
@@ -193,6 +232,8 @@ def parse_args():
     parser.add_argument('--create-combined', action='store_true')
     parser.add_argument('--combine-dataset', action='store_true')
     parser.add_argument('--convert-svo', action='store_true')
+    parser.add_argument('--reverse-map', action='store_true')
+    parser.add_argument('--normal', action='store_true')
 
     args = parser.parse_args()
     return args
@@ -207,6 +248,8 @@ if __name__ == '__main__':
     args.create_combined = global_args.create_combined
     args.combine_dataset = global_args.combine_dataset
     args.convert_svo = global_args.convert_svo
+    args.reverse_map = global_args.reverse_map
+    args.normal = global_args.normal
 
     if args.map == True:
         map_code_sign()
@@ -222,3 +265,7 @@ if __name__ == '__main__':
         combine_dataset()
     elif args.convert_svo == True:
         convert_svo_mp4()
+    elif args.reverse_map == True:
+        reverse_map()
+    elif args.normal == True:
+        map_normal()
