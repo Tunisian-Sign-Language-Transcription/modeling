@@ -16,7 +16,7 @@ SAVED_JOINTS_DATA_DIR = os.path.join(DATA_DIR,'saved','joints')
 
 SEQUENCE_COLLECTION_WAIT = 2000
 
-ACTIONS = np.array([''])
+ACTIONS = np.array(['hi','love','depression'])
 
 SAVED_ACTIONS = np.array(['test'])
 
@@ -35,7 +35,7 @@ LSTM_EPOCHS = 30
 
 ## Transfomer Hyperparameters
 
-MAXLEN = 30     # Only consider the first 30 frames of each sequence
+MAXLEN = SEQUENCE_LENGTH    # Only consider the first n frames of each sequence
 
 EMBED_DIM = 258 # Embedding size of each token
 NUM_HEADS = 2   # Number of attention heads 

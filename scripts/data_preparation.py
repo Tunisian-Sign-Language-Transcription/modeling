@@ -45,6 +45,13 @@ def clear_data():
 
 
 
+
+
+
+
+
+
+
 def load_data(source="cam"):
     
     sequences, labels = [], []
@@ -55,6 +62,9 @@ def load_data(source="cam"):
     elif (source == "cam"):
         actions = s.ACTIONS
         joints_trg = s.JOINTS_DATA_DIR
+    elif (source== "jumla"):
+        actions = os.listdir(os.path.join(s.DATA_DIR,"jumla","keypoints"))
+        joints_trg = os.path.join(s.DATA_DIR,"jumla","keypoints")
     else:
         print("Source not specified.")
         exit()

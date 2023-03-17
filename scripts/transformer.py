@@ -67,13 +67,16 @@ def build_transformer_pose_model():
     x = Dropout(0.1)(x)
     x = Dense(20, activation="relu")(x)
     x = Dropout(0.1)(x)
-    outputs = Dense(s.ACTIONS.shape[0], activation="softmax")(x)
+
+    nb_classes = len(os.listdir(os.path.join(s.DATA_DIR,"jumla","keypoints")))
+
+    outputs = Dense(nb_classes, activation="softmax")(x)
 
     model = Model(inputs=inputs, outputs=outputs)
     return model
 
-def train_transformer_model(model_name):
-    sequences, labels = load_data()
+def train_transformer_model(model_name,dataset):
+    sequences, labels = load_data(dataset)
 
     X = np.array(sequences)
     y = np.array(labels)

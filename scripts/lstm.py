@@ -6,7 +6,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense
 from tensorflow.keras.callbacks import TensorBoard
 import numpy as np
-import tensorflowjs as tfjs
+#import tensorflowjs as tfjs
 import os 
 from data_preparation import load_data
 import settings as s
@@ -24,8 +24,8 @@ def build_lstm_pose_model():
     return model
 
 
-def train_lstm_pose_model(model_name):
-    sequences, labels = load_data()
+def train_lstm_pose_model(model_name,dataset):
+    sequences, labels = load_data(dataset)
     X = np.array(sequences)
     y = to_categorical(labels).astype(int)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=s.TRAIN_TEST_SPLIT)

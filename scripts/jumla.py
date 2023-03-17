@@ -164,30 +164,27 @@ def combine_dataset():
     add_to_combined(combined_codes,jihed_codes,"jihed")
 
 
+    
 
-def convert_svo_mp4():
+def convert_svo_to_keypoints(sign_id,prog_bar):
     combined_path = os.path.join(s.DATA_DIR, "jumla","combined")
     keypoints_path = os.path.join(s.DATA_DIR,"jumla","keypoints")
-    signs = os.listdir(combined_path)
-    
-    for sign in signs:
-        dst_path = os.path.join(keypoints_path,sign)
+    dst_path = os.path.join(keypoints_path,sign_id)
+    os.makedirs(dst_path)
+    sign_path = os.path.join(combined_path,sign_id)
+    videos = os.listdir(sign_path)
+    nb_videos = len(videos)
+    video_counter = 1
+    for video in videos:
+        dst_path = os.path.join(keypoints_path,sign_id)
+        dst_path = os.path.join(dst_path,f'{video_counter}')
         os.makedirs(dst_path)
-        sign_path = os.path.join(combined_path,sign)
-        videos = os.listdir(sign_path)
-        video_counter = 0
-        for video in videos:
-            dst_path = os.path.join(dst_path,f'video_{video_counter}')
-            os.makedirs(dst_path)
-            video_counter +=1
-            video_path = os.path.join(sign_path,video)
+        video_counter +=1
+        video_path = os.path.join(sign_path,video)
+        print(f'Converting sign {prog_bar}: {sign_id}: video: {video_counter}/{nb_videos}')
+        convert(video_path,dst_path)
 
 
-            convert(video_path,dst_path)
-
-            exit()
-
-    
 
 
 def reverse_map():
@@ -222,6 +219,35 @@ def map_normal():
                     os.rename(src_path,dst_path)
 
 
+def get_nb_examples():
+    sign_nb={}
+    combined_path = os.path.join(s.DATA_DIR,"jumla","combined")
+    signs = os.listdir(combined_path)
+    for sign in signs:
+        sign_path = os.path.join(combined_path,sign)
+        examples = os.listdir(sign_path)
+        sign_nb[sign] = len(examples)
+
+    sorted_dict = dict(sorted(sign_nb.items(), key=lambda x: x[1]))    
+    return sorted_dict
+
+
+
+def sample_dataset(nb_examples,sample_size):
+    sign_dict = get_nb_examples()
+    sampled_ids = [key for key in sign_dict if sign_dict[key] in nb_examples][:sample_size]
+    sign_counter =1
+    
+    for sign_id in sampled_ids:
+        prog_bar = f'({sign_counter}/{sample_size})'
+        sign_counter +=1
+        convert_svo_to_keypoints(sign_id,prog_bar)
+
+
+
+
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description='Download Jumla Dataset')
@@ -234,6 +260,7 @@ def parse_args():
     parser.add_argument('--convert-svo', action='store_true')
     parser.add_argument('--reverse-map', action='store_true')
     parser.add_argument('--normal', action='store_true')
+    parser.add_argument('--sample-dataset', action='store', nargs='*', type=int)
 
     args = parser.parse_args()
     return args
@@ -247,9 +274,9 @@ if __name__ == '__main__':
     args.remove_duplicates = global_args.remove_duplicates
     args.create_combined = global_args.create_combined
     args.combine_dataset = global_args.combine_dataset
-    args.convert_svo = global_args.convert_svo
     args.reverse_map = global_args.reverse_map
     args.normal = global_args.normal
+    args.sample_dataset = global_args.sample_dataset
 
     if args.map == True:
         map_code_sign()
@@ -263,9 +290,9 @@ if __name__ == '__main__':
         create_combined_folder()
     elif args.combine_dataset == True:
         combine_dataset()
-    elif args.convert_svo == True:
-        convert_svo_mp4()
     elif args.reverse_map == True:
         reverse_map()
     elif args.normal == True:
         map_normal()
+    elif args.sample_dataset[0] is not None:
+        sample_dataset(nb_examples=[args.sample_dataset[0]],sample_size=args.sample_dataset[1])
