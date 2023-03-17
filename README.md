@@ -8,9 +8,7 @@ conda activate tsl-classification-envir
 ### Dependencies
 ```
 pip -r requirements.txt
-
 python svo_export.py
-
 cd scripts/
 ```
 
