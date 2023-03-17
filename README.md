@@ -2,13 +2,16 @@
 ## Installation
 ### Virtual environement
 ```
-conda create --name tsl-classification-envir python=3.8
+conda create --name tsl-classification-envir python=3.9
 conda activate tsl-classification-envir 
-cd scripts
 ```
 ### Dependencies
 ```
-pip install tensorflow==2.4.1 tensorflow-gpu==2.4.1 opencv-python mediapipe sklearn matplotlib
+pip -r requirements.txt
+
+python svo_export.py
+
+cd scripts/
 ```
 
 
@@ -51,13 +54,18 @@ python cam.py --collect-data
 you can also play a recorded sequence of a specific action by running the following command
 ```
 python cam.py --play {ACTION} {SEQUENCE_NUMBER}
-```
 
+```
+### Sampling from the jumla dataset
+
+```
+python jumla.py --sample-dataset <nb_examples> <sample_size>
+```
 
 ## Running the model
 you can run the model on the collected dataset by executing this script (the model will be stored in the models directory)
 ```
-python model.py --train <model_architecture> <model_name>
+python model.py --train <model_architecture> <model_name> --dataset <dataset_source>
 ```
 to Monitor the training performance of your model run this command within the scripts/Logs/train directory and then grab the generated url and put it in a browser
 ```
