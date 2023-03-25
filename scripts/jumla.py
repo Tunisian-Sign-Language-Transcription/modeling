@@ -20,15 +20,15 @@ s3 = boto3.resource('s3')
 
 def download_vids():
     keys = []
-    txt_file = open("./resources/s3-uris.txt", "r")
+    txt_file = open("./resources/filtered-uris.txt", "r")
     f = open("./resources/index.txt", "r")
     index = int(f.read())
 
     # CHOOSE YOUR RANGE HERE
-    end = 806
+    end = 15520
     ###
     keys = txt_file.readlines()
-    total = 806
+    total = 15520
 
     filtered_keys = [key.strip()
                      for key in keys if 'rec0' in key.strip()][index:end]
